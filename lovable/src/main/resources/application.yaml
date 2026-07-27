@@ -1,3 +1,4 @@
 spring:
   application:
     name: lovable
+    description: This is scaled application for creating custom projects using ai
