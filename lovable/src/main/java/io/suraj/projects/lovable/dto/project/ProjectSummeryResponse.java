@@ -1,4 +1,4 @@
-package io.suraj.projects.lovable.doto.project;
+package io.suraj.projects.lovable.dto.project;
 
 import java.time.Instant;
 

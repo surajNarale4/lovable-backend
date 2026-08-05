@@ -1,10 +1,10 @@
 package io.suraj.projects.lovable.controller;
 
 
-import io.suraj.projects.lovable.doto.auth.AuthResponse;
-import io.suraj.projects.lovable.doto.auth.LoginRequest;
-import io.suraj.projects.lovable.doto.auth.SignupRequest;
-import io.suraj.projects.lovable.doto.auth.UserProfileRespose;
+import io.suraj.projects.lovable.dto.auth.AuthResponse;
+import io.suraj.projects.lovable.dto.auth.LoginRequest;
+import io.suraj.projects.lovable.dto.auth.SignupRequest;
+import io.suraj.projects.lovable.dto.auth.UserProfileRespose;
 import io.suraj.projects.lovable.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

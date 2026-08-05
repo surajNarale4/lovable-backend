@@ -1,6 +1,6 @@
-package io.suraj.projects.lovable.doto.project;
+package io.suraj.projects.lovable.dto.project;
 
-import io.suraj.projects.lovable.doto.auth.UserProfileRespose;
+import io.suraj.projects.lovable.dto.auth.UserProfileRespose;
 
 import java.time.Instant;
 

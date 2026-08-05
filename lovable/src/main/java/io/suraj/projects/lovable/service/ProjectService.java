@@ -1,8 +1,8 @@
 package io.suraj.projects.lovable.service;
 
-import io.suraj.projects.lovable.doto.project.ProjectRequest;
-import io.suraj.projects.lovable.doto.project.ProjectResponse;
-import io.suraj.projects.lovable.doto.project.ProjectSummeryResponse;
+import io.suraj.projects.lovable.dto.project.ProjectRequest;
+import io.suraj.projects.lovable.dto.project.ProjectResponse;
+import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
 
 import java.util.List;
 

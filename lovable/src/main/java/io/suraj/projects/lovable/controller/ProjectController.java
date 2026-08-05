@@ -1,11 +1,10 @@
 package io.suraj.projects.lovable.controller;
 
-import io.suraj.projects.lovable.doto.project.ProjectRequest;
-import io.suraj.projects.lovable.doto.project.ProjectResponse;
-import io.suraj.projects.lovable.doto.project.ProjectSummeryResponse;
+import io.suraj.projects.lovable.dto.project.ProjectRequest;
+import io.suraj.projects.lovable.dto.project.ProjectResponse;
+import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
 import io.suraj.projects.lovable.service.ProjectService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
