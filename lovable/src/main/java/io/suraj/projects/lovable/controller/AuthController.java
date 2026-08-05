@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private AuthService authService;
+    private  AuthService authService; //later will make final once implements
 
     public ResponseEntity<AuthResponse> signup(SignupRequest request){
         return ResponseEntity.ok(authService.signup(request));
