@@ -8,7 +8,7 @@ public class Plan {
     private Integer maxProjects;
     private Integer maxTokensPerDay;
     private Integer maxPreviews;
-    private Boolean unlimnitedAi;
+    private Boolean unlimitedAi;
 
     private Boolean active;
 }
