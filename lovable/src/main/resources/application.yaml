@@ -2,3 +2,16 @@ spring:
   application:
     name: lovable
     description: This is scaled application for creating custom projects using ai
+
+  datasource:
+    url:  jdbc:postgresql://localhost:5432/lovable
+    username: postgres
+    password: surajnarale
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
