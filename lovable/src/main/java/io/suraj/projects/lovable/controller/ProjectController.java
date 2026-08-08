@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/api/projects")
 @RequiredArgsConstructor
 public class ProjectController {
-    private  ProjectService projectService; //will make final later
+    private final ProjectService projectService;
 
     @GetMapping
     public ResponseEntity<List<ProjectSummeryResponse>> getMyProjects(){
@@ -30,7 +30,8 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest request){
-        return ResponseEntity.status(201).body(projectService.createProject(request));
+        Long userId = 1L;
+        return ResponseEntity.status(201).body(projectService.createProject(request , userId));
     }
 
     @PatchMapping("/{id}")

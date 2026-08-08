@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +24,19 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     @Override
     public List<ProjectSummeryResponse> getUserProjects(Long userId) {
-        return List.of();
+        User user =  userRepository.findById(userId).orElseThrow();
+        List<Project> projects = projectRepository.findByAccessbileProjects(user.getId());
+        return projects.stream()
+                .map(projectMapper::toProjectSummeryResponse)
+                .toList();
+
+
     }
 
     @Override
     public ProjectResponse getUserProjectById(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+
         return null;
     }
 
