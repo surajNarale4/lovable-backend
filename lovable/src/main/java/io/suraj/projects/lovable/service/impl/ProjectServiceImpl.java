@@ -9,14 +9,17 @@ import io.suraj.projects.lovable.mapper.ProjectMapper;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
 import io.suraj.projects.lovable.service.ProjectService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -61,6 +64,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void softDelete(Long id, Long userId) {
-
+        Project project = projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow();
+        project.setDeletedAt(Instant.now());
+        
     }
 }
