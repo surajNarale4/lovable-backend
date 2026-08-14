@@ -26,6 +26,19 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
 
     @Query(
             """
+            SELECT p FROM Project p 
+                        where p.owner.id=:user_id
+                        AND p.id=:project_id
+                        AND p.deletedAt is null
+            """
+    )
+    Optional<Project> findByAccessbileProjects(
+            @Param("user_id") Long userId,
+            @Param("project_id") Long projectId
+    );
+
+    @Query(
+            """
             SELECT p from Project p 
                         LEFT JOIN p.owner
                         where p.owner.id=:userId 

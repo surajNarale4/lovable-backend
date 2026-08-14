@@ -7,9 +7,9 @@ import io.suraj.projects.lovable.entity.ProjectMember;
 import java.util.List;
 
 public interface ProjectMemberService {
-    List<ProjectMember> getAllProjectMembers(Long userId, Long projectId);
+    List<MemberResponse> getAllProjectMembers(Long userId, Long projectId);
 
-    MemberResponse inviteMember(Long userId, String projectId, InviteMemberRequest request);
+    MemberResponse inviteMember(Long userId, Long projectId, InviteMemberRequest request);
 
     MemberResponse updateMemberRole(Long projectId, Long memberId, InviteMemberRequest request, Long userId);
 

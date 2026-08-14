@@ -5,25 +5,27 @@ import io.suraj.projects.lovable.dto.members.InviteMemberRequest;
 import io.suraj.projects.lovable.dto.members.MemberResponse;
 import io.suraj.projects.lovable.entity.ProjectMember;
 import io.suraj.projects.lovable.service.ProjectMemberService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/projects/{projectId}/members")
 public class ProjectMemberController {
 
-    private ProjectMemberService projectMemberService;
+    private final ProjectMemberService projectMemberService;
 
     @GetMapping
-    public ResponseEntity<List<ProjectMember>> getAllProjectMembers(@PathVariable Long projectId){
+    public ResponseEntity<List<MemberResponse>> getAllProjectMembers(@PathVariable Long projectId){
         Long userId= 1L;
         return ResponseEntity.ok(projectMemberService.getAllProjectMembers(userId , projectId));
     }
     @PostMapping
     public ResponseEntity<MemberResponse> inviteMember(
-            @PathVariable String projectId,
+            @PathVariable Long projectId,
             @RequestBody InviteMemberRequest request
     ){
         Long userId= 1L;
