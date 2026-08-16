@@ -4,6 +4,7 @@ import io.suraj.projects.lovable.dto.project.ProjectRequest;
 import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
 import io.suraj.projects.lovable.service.ProjectService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,13 +30,13 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest request){
+    public ResponseEntity<ProjectResponse> createProject(@RequestBody @Valid ProjectRequest request){
         Long userId = 1L;
         return ResponseEntity.status(201).body(projectService.createProject(request , userId));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id , @RequestBody ProjectRequest request){
+    public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id , @RequestBody @Valid ProjectRequest request){
         Long userId =1L;
         return ResponseEntity.ok(projectService.updateProject(id,request,userId));
     }
