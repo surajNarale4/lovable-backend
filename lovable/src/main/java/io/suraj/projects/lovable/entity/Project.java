@@ -8,12 +8,18 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name="projects")
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Table(
+        name="projects",
+        indexes = {
+                @Index(name="idx_project_owner_deleted_updated", columnList = "owner,deletedAt,updatedAt"),
+                @Index(name="idx_project_deteled_at" , columnList="deleted_at")
+        }
+)
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
