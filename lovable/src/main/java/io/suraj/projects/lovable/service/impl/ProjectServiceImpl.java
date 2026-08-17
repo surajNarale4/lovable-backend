@@ -5,6 +5,7 @@ import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
 import io.suraj.projects.lovable.entity.Project;
 import io.suraj.projects.lovable.entity.User;
+import io.suraj.projects.lovable.error.ResourseNotFoundException;
 import io.suraj.projects.lovable.mapper.ProjectMapper;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
@@ -27,7 +28,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     @Override
     public List<ProjectSummeryResponse> getUserProjects(Long userId) {
-        User user =  userRepository.findById(userId).orElseThrow();
+        User user =  userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("user not found for given user id"));
         List<Project> projects = projectRepository.findByAccessbileProjects(user.getId());
         return projects.stream()
                 .map(projectMapper::toProjectSummeryResponse)
@@ -38,13 +39,13 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
-      Project project=  projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow();
+      Project project=  projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given user id"+ userId));
         return projectMapper.toProjectResponse(project);
     }
 
     @Override
     public ProjectResponse createProject(ProjectRequest request, Long userId) {
-        User user= userRepository.findById(userId).orElseThrow();
+        User user= userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("no user found for given id "+userId));
         Project project=Project.builder()
                 .owner(user)
                 .name(request.name())
@@ -56,7 +57,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
-        Project project = projectRepository.findProjectByUserIdAndProjectId(id, userId).orElseThrow();
+        Project project = projectRepository.findProjectByUserIdAndProjectId(id, userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setName(request.name());
         projectRepository.save(project);
         return projectMapper.toProjectResponse(project);
@@ -64,7 +65,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public void softDelete(Long id, Long userId) {
-        Project project = projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow();
+        Project project = projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setDeletedAt(Instant.now());
         
     }
