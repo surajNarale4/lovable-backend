@@ -4,11 +4,15 @@ import io.suraj.projects.lovable.dto.project.ProjectRequest;
 import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
 import io.suraj.projects.lovable.entity.Project;
+import io.suraj.projects.lovable.entity.ProjectMember;
 import io.suraj.projects.lovable.entity.User;
+import io.suraj.projects.lovable.entity.enums.ProjectRole;
 import io.suraj.projects.lovable.error.ResourseNotFoundException;
 import io.suraj.projects.lovable.mapper.ProjectMapper;
+import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
+import io.suraj.projects.lovable.service.ProjectMemberService;
 import io.suraj.projects.lovable.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
+    private final ProjectMemberRepository projectMemberRepository;
     @Override
     public List<ProjectSummeryResponse> getUserProjects(Long userId) {
         User user =  userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("user not found for given user id"));
@@ -37,6 +42,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     }
 
+    /*
+    Below one is for finding particular project of user
+     */
     @Override
     public ProjectResponse getUserProjectById(Long id, Long userId) {
       Project project=  projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given user id"+ userId));
@@ -47,9 +55,14 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse createProject(ProjectRequest request, Long userId) {
         User user= userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("no user found for given id "+userId));
         Project project=Project.builder()
-                .owner(user)
                 .name(request.name())
                 .build();
+        ProjectMember projectMember = ProjectMember.builder()
+                .role(ProjectRole.OWNER)
+                .user(user)
+                .project(project)
+                .build();
+        projectMemberRepository.save(projectMember);
         return projectMapper.toProjectResponse(projectRepository.save(project));
 
 
