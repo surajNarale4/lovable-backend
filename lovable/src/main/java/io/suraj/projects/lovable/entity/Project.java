@@ -16,7 +16,7 @@ import java.time.Instant;
 @Table(
         name="projects",
         indexes = {
-                @Index(name="idx_project_owner_deleted_updated", columnList = "owner,deletedAt,updatedAt"),
+                @Index(name="idx_project_owner_deleted_updated", columnList = "deletedAt,updatedAt"),
                 @Index(name="idx_project_deteled_at" , columnList="deleted_at")
         }
 )
@@ -26,10 +26,6 @@ public class Project {
     private Long id;
 
     private String name;
-
-    @ManyToOne
-    @JoinColumn(name="owner_id",nullable = false)
-    private User owner;
 
     private Boolean isPublic;
 
