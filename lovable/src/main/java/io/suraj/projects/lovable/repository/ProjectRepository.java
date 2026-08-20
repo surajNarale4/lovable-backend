@@ -13,22 +13,26 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project,Long> {
 
+    /*
+    Gethering All Projects with ProjectMember EARER Fetch
+     */
     @Query(
             """
-            SELECT p from Project p 
-                        where p.owner.id=:user_id
+            SELECT p from Project p Join ProjectMember pm
+                        on pm.project = p
+                        where pm.user = :user_id
+                        AND pm.role='OWNER'
                         AND p.deletedAt is null
                         ORDeR by p.updatedAt desc
-                     
             """
     )
     List<Project> findByAccessbileProjects(@Param("user_id") Long userId);
 
     @Query(
             """
-            SELECT p FROM Project p 
-                        where p.owner.id=:user_id
-                        AND p.id=:project_id
+            SELECT p FROM Project p JOIN FETCH ProjectMember pm 
+                        on pm.project = p 
+                        where p.id=:project_id
                         AND p.deletedAt is null
             """
     )
@@ -37,16 +41,20 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             @Param("project_id") Long projectId
     );
 
+    /*
+    The Below need to check it's working properly or not as per Requirements
+     */
     @Query(
             """
             SELECT p from Project p 
-                        LEFT JOIN p.owner
-                        where p.owner.id=:userId 
-                        AND p.id=:projectId
+                        Join fetch ProjectMember pm 
+                        on pm.project = p
+                        AND pm.user = :user_id
+                        where  p.id=:projectId
                         AND p.deletedAt is null
             """
     )
     Optional<Project> findProjectByUserIdAndProjectId(
             @Param("projectId") Long projectId
-            ,@Param("userId") Long userId);
+            ,@Param("user_id") Long userId);
 }
