@@ -20,7 +20,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             """
             SELECT p from Project p Join ProjectMember pm
                         on pm.project = p
-                        where pm.user = :user_id
+                        where pm.user.id = :user_id
                         AND pm.role='OWNER'
                         AND p.deletedAt is null
                         ORDeR by p.updatedAt desc
@@ -49,7 +49,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             SELECT p from Project p 
                         Join fetch ProjectMember pm 
                         on pm.project = p
-                        AND pm.user = :user_id
+                        AND pm.user.id = :user_id
                         where  p.id=:projectId
                         AND p.deletedAt is null
             """
