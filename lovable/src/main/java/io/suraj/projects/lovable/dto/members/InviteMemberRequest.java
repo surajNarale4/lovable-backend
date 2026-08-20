@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record InviteMemberRequest(
         Long userId,
-        @Email @NotNull String email,
+        @Email(message = "please provide correct email") @NotNull String email,
         @NotNull ProjectRole role
 ) {
 }
