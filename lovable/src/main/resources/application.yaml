@@ -15,3 +15,22 @@ spring:
       hibernate:
         format_sql: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/ai-client
+server:
+  port: 8081
+
+keycloak:
+  realm: ai-client
+  auth-server-url: http://localhost:8080
+  client-id: admin-cli-spring-boot
+  admin-cli-secret: vh3u18F9mO62XIrKoAGxEBTxfNSmJWKI
+
+logging:
+  level:
+    org:
+      springframework:
+        security: Trace
