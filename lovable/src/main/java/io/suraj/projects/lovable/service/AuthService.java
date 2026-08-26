@@ -8,7 +8,7 @@ import io.suraj.projects.lovable.dto.auth.UserProfileRespose;
 
 public interface AuthService {
     
-    AuthResponse signup(SignupRequest request);
+    String signup(SignupRequest request);
 
     AuthResponse login(LoginRequest request);
 
