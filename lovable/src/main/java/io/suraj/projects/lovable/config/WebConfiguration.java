@@ -1,4 +1,4 @@
-package io.gateway.config;
+package io.suraj.projects.lovable.config;
 
 
 import jakarta.servlet.Filter;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -36,8 +37,11 @@ public class WebConfiguration {
         return httpSecurity
                 .cors(cors->cors.configurationSource(corsConfig())) //overrided in this class already
                 .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll().anyRequest().authenticated())
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/auth/signup","/api/auth/login").permitAll()
+                        .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2->
                         oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();
