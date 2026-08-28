@@ -1,4 +1,4 @@
-package io.gateway.config;
+package io.suraj.projects.lovable.config;
 
 
 import org.springframework.core.convert.converter.Converter;

@@ -7,7 +7,7 @@ import java.time.Instant;
 
 @Builder
 public record MemberResponse(
-        Long id,
+        String id,
         String email,
         String name,
         String avtarUrl,

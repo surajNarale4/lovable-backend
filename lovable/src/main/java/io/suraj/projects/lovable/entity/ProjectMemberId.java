@@ -11,5 +11,5 @@ import lombok.*;
 @Builder
 public class ProjectMemberId {
     private Long projectId;
-    private Long userId;
+    private String userId;
 }

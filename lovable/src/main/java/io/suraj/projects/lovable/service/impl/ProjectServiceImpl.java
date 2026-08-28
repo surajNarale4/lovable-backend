@@ -32,7 +32,7 @@ public class ProjectServiceImpl implements ProjectService {
     private final ProjectMapper projectMapper;
     private final ProjectMemberRepository projectMemberRepository;
     @Override
-    public List<ProjectSummeryResponse> getUserProjects(Long userId) {
+    public List<ProjectSummeryResponse> getUserProjects(String userId) {
         User user =  userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("user not found for given user id"));
         List<Project> projects = projectRepository.findByAccessbileProjects(user.getId());
         return projects.stream()
@@ -46,13 +46,13 @@ public class ProjectServiceImpl implements ProjectService {
     Below one is for finding particular project of user
      */
     @Override
-    public ProjectResponse getUserProjectById(Long id, Long userId) {
+    public ProjectResponse getUserProjectById(Long id, String userId) {
       Project project=  projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given user id"+ userId));
         return projectMapper.toProjectResponse(project);
     }
 
     @Override
-    public ProjectResponse createProject(ProjectRequest request, Long userId) {
+    public ProjectResponse createProject(ProjectRequest request, String userId) {
         User user= userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("no user found for given id "+userId));
         Project project=Project.builder()
                 .name(request.name())
@@ -69,7 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public ProjectResponse updateProject(Long id, ProjectRequest request, Long userId) {
+    public ProjectResponse updateProject(Long id, ProjectRequest request, String userId) {
         Project project = projectRepository.findProjectByUserIdAndProjectId(id, userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setName(request.name());
         projectRepository.save(project);
@@ -77,7 +77,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void softDelete(Long id, Long userId) {
+    public void softDelete(Long id, String userId) {
         Project project = projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setDeletedAt(Instant.now());
         

@@ -19,7 +19,7 @@ public interface MemberMapper {
     @Mapping(target = "invitedAt", source = "invitedAt")
     MemberResponse toMemberMapper(ProjectMember projectMember);
 
-    default Long map(ProjectMemberId value){
+    default String map(ProjectMemberId value){
         return value==null ? null : value.getUserId();
     }
 

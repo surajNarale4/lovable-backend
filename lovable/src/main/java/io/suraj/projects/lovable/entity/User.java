@@ -17,8 +17,9 @@ import java.time.Instant;
 @Builder
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id
+    private String id;
+    private String keycloakUserId;
     private String email;
     private String passwordHash;
     private String name;

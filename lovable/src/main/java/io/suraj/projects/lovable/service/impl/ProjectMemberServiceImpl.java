@@ -5,10 +5,10 @@ import io.suraj.projects.lovable.dto.members.MemberResponse;
 import io.suraj.projects.lovable.entity.Project;
 import io.suraj.projects.lovable.entity.ProjectMember;
 import io.suraj.projects.lovable.entity.ProjectMemberId;
+import io.suraj.projects.lovable.entity.enums.ProjectRole;
 import io.suraj.projects.lovable.error.BadRequestException;
 import io.suraj.projects.lovable.error.ResourseNotFoundException;
 import io.suraj.projects.lovable.mapper.MemberMapper;
-import io.suraj.projects.lovable.mapper.ProjectMapper;
 import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
@@ -21,7 +21,6 @@ import io.suraj.projects.lovable.entity.User;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,11 +32,13 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     private final ProjectRepository projectRepository;
     private final MemberMapper memberMapper;
 
+    /*
+    There is unecessary parameter userId , will check later
+     */
     @Override
-    public List<MemberResponse> getAllProjectMembers(Long userId, Long projectId) {
+    public List<MemberResponse> getAllProjectMembers(String userId, Long projectId) {
         Project project=projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
         List<MemberResponse> projectMembers = new ArrayList<>();
-        projectMembers.add(memberMapper.toMemberMapper(project.getOwner()));
         projectMemberRepository.findByProjectId(projectId).stream()
                 .map(members-> projectMembers.add(memberMapper.toMemberMapper(members)))
                 .toList();
@@ -47,66 +48,92 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     }
 
 
-    public MemberResponse inviteMember(Long userId, Long projectId, InviteMemberRequest request) {
-        Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
-        /*
-         * Users cannot send invitations on behalf of someone else.
-         */
-        if(!project.getOwner().getId().equals(userId)){
-            throw new BadRequestException("This action is not allowed");
-        }
+    public MemberResponse inviteMember(String userId, Long projectId, InviteMemberRequest request) {
+//         Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
+//        /*
+//         * Users cannot send invitations on behalf of someone else.
+//         */
+//        if(!project.getOwner().getId().equals(userId)){
+//            throw new BadRequestException("This action is not allowed");
+//        }
+        ProjectMember projectMember =projectMemberRepository.findByProjectIdAndUserIdAndRole(projectId,userId, ProjectRole.OWNER).orElseThrow(
+                ()-> new ResourseNotFoundException("User either not have this project or nor owner")
+        );
+         /*
+          * Users cannot send invitations on behalf of someone else.
+          */
+        if(!projectMember.getUser().getId().equals(userId)) throw new BadRequestException("This Action is not allowed");
 
-        User invitee = userRepository.findByEmail(request.email()).orElseThrow();
-        if(invitee.getId().equals(userId)){
+        User invitee =userRepository.findById(request.userId()).orElseThrow(
+                ()-> new ResourseNotFoundException("this user is no longer available")
+        );
+
+        if(request.userId().equals(userId)){
             throw new BadRequestException("cannot invite your self");
         }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, invitee.getId());
 
-        ProjectMember projectMember = ProjectMember.builder()
+        ProjectMember inviteProjectMember = ProjectMember.builder()
                 .id(projectMemberId)
-                .project(project)
+                .project(projectMember.getProject())
                 .user(invitee)
                 .role(request.role())
                 .invitedAt(Instant.now())
                 .build();
-        projectMemberRepository.save(projectMember);
-        return memberMapper.toMemberMapper(projectMember);
+        projectMemberRepository.save(inviteProjectMember);
+        return memberMapper.toMemberMapper(inviteProjectMember);
 
     }
 
-    @Override
-    public MemberResponse updateMemberRole(Long projectId, Long memberId, InviteMemberRequest request, Long userId) {
 
-        Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
+
+
+    public MemberResponse updateMemberRole(Long projectId, String memberId, InviteMemberRequest request, String userId) {
+
+//        Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
+//        /*
+//         * Users cannot send invitations on behalf of someone else.
+//         */
+//        if(!project.getOwner().getId().equals(userId)){
+//            throw new BadRequestException("This action is not allowed");
+//        }
+        ProjectMember owner =projectMemberRepository.findByProjectIdAndUserIdAndRole(projectId,userId, ProjectRole.OWNER).orElseThrow(
+                ()-> new ResourseNotFoundException("User either not have this project or nor owner")
+        );
         /*
          * Users cannot send invitations on behalf of someone else.
          */
-        if(!project.getOwner().getId().equals(userId)){
-            throw new BadRequestException("This action is not allowed");
-        }
-        ProjectMember projectMember = projectMemberRepository.findById(
-                ProjectMemberId.builder()
+        if(owner.getUser().getId().equals(memberId)) throw new BadRequestException("This Action is not allowed");
+
+        User recipient =userRepository.findById(request.userId()).orElseThrow(
+                ()-> new ResourseNotFoundException("this user is no longer available")
+        );
+        ProjectMemberId projectMemberId = ProjectMemberId.builder()
                         .userId(memberId)
                         .projectId(projectId)
-                        .build()
-        ).orElseThrow();
-        projectMember.setRole(request.role());
-        projectMemberRepository.save(projectMember); //saving explicitly as well
-       return memberMapper.toMemberMapper(projectMember);
+                        .build();
+        ProjectMember newProjectMember =ProjectMember.builder()
+                        .project(owner.getProject())
+                        .user(recipient)
+                        .role(request.role())
+                        .build();
+
+        projectMemberRepository.save(newProjectMember); //saving explicitly as well
+       return memberMapper.toMemberMapper(newProjectMember);
     }
 
-    @Override
-    public MemberResponse deleteProjectMember(Long projectId, Long memberId, Long userId) {
+
+    public MemberResponse deleteProjectMember(Long projectId, String memberId, String userId) {
         Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
         /*
          * Users cannot send invitations on behalf of someone else.
          */
-        if(!project.getOwner().getId().equals(userId)){
-            throw new BadRequestException("This action is not allowed");
-        }
-        if(project.getOwner().getId().equals(memberId)){
-            throw new BadRequestException("you can't delete yourself using this api");
-        }
+//        if(!project.getOwner().getId().equals(userId)){
+//            throw new BadRequestException("This action is not allowed");
+//        }
+//        if(project.getOwner().getId().equals(memberId)){
+//            throw new BadRequestException("you can't delete yourself using this api");
+//        }
         ProjectMemberId projectMemberId=ProjectMemberId.builder()
                 .projectId(projectId)
                 .userId(memberId)

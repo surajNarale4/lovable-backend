@@ -12,5 +12,5 @@ public interface AuthService {
 
     AuthResponse login(LoginRequest request);
 
-    UserProfileRespose getProfile(Long userId);
+    UserProfileRespose getProfile(String userId);
 }

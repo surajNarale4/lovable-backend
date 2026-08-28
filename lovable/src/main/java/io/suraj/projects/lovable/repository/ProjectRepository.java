@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project,Long> {
+public interface ProjectRepository extends JpaRepository<Project,String> {
 
     /*
     Gethering All Projects with ProjectMember EARER Fetch
@@ -26,7 +26,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
                         ORDeR by p.updatedAt desc
             """
     )
-    List<Project> findByAccessbileProjects(@Param("user_id") Long userId);
+    List<Project> findByAccessbileProjects(@Param("user_id") String userId);
 
     @Query(
             """
@@ -37,7 +37,7 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
             """
     )
     Optional<Project> findByAccessbileProjects(
-            @Param("user_id") Long userId,
+            @Param("user_id") String userId,
             @Param("project_id") Long projectId
     );
 
@@ -56,5 +56,5 @@ public interface ProjectRepository extends JpaRepository<Project,Long> {
     )
     Optional<Project> findProjectByUserIdAndProjectId(
             @Param("projectId") Long projectId
-            ,@Param("user_id") Long userId);
+            ,@Param("user_id") String userId);
 }
