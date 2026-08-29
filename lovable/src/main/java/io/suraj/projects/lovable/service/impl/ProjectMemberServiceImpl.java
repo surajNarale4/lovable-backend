@@ -15,6 +15,7 @@ import io.suraj.projects.lovable.repository.UserRepository;
 import io.suraj.projects.lovable.service.ProjectMemberService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.admin.client.Keycloak;
 import org.springframework.stereotype.Service;
 import io.suraj.projects.lovable.entity.User;
 

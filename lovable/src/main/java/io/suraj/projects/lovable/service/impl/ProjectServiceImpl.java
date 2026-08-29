@@ -16,6 +16,9 @@ import io.suraj.projects.lovable.service.ProjectMemberService;
 import io.suraj.projects.lovable.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,6 +31,7 @@ import java.util.stream.Collectors;
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final Keycloak keycloak;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
     private final ProjectMemberRepository projectMemberRepository;
@@ -63,6 +67,9 @@ public class ProjectServiceImpl implements ProjectService {
                 .project(project)
                 .build();
         projectMemberRepository.save(projectMember);
+//        UserResource userResource=keycloak.realm("").users().get(userId);
+//        UserRepresentation userRepresentation =userResource.toRepresentation();
+//        userRepresentation.setRealmRoles(List.of(String.valueOf(ProjectRole.OWNER)));
         return projectMapper.toProjectResponse(projectRepository.save(project));
 
 

@@ -44,6 +44,7 @@ public class AuthServiceImpl implements AuthService {
         userRepresentation.setEmailVerified(true);
         userRepresentation.setFirstName(request.name());
         userRepresentation.setLastName("ll");
+        userRepresentation.setRealmRoles(List.of("USER"));
 
         CredentialRepresentation credentialRepresentation = new CredentialRepresentation();
         credentialRepresentation.setType(CredentialRepresentation.PASSWORD);
@@ -70,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
                 localUser.setId(keycloakUserId);    // <-- shared ID, this is the link
                 localUser.setName(request.name());
                 localUser.setEmail(request.email());
+
                 userRepository.save(localUser);
             } catch (Exception e) {
                 // rollback: delete the Keycloak user if local save fails, to avoid orphaned accounts
