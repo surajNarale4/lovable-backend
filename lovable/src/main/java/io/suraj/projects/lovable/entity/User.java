@@ -20,6 +20,7 @@ public class User {
     @Id
     private String id;
     private String keycloakUserId;
+    @Column(unique = true)
     private String email;
     private String passwordHash;
     private String name;

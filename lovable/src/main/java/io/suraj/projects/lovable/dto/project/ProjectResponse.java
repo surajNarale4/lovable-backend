@@ -8,7 +8,7 @@ public record ProjectResponse(
         Long id,
         String name,
         Instant createdAt,
-        Instant updatedAt,
-        UserProfileRespose owner
+        Instant updatedAt
+
 ) {
 }

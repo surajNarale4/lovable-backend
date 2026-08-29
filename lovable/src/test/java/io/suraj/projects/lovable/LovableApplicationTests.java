@@ -4,6 +4,7 @@ import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.entity.Project;
 import io.suraj.projects.lovable.entity.User;
 import io.suraj.projects.lovable.mapper.ProjectMapper;
+import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import io.suraj.projects.lovable.service.ProjectService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ class LovableApplicationTests {
 	private ProjectMapper projectMapper;
 	@Autowired
 	private ProjectService projectService;
+
+	@Autowired
+	private ProjectMemberRepository projectMemberRepository;
 
 
 	@Test
@@ -33,6 +37,8 @@ class LovableApplicationTests {
 //		System.out.println(projectResponse);
 
 //		System.out.println(projectService.getUserProjects(1L));
+
+		System.out.println(projectMemberRepository.findProjectRoleByUseridAndProjectId("438a654a-8af6-4d00-ad43-2fedf3ebe5af",1L));
 
 
 	}

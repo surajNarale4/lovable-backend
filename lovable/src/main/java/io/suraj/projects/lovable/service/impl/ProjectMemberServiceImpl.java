@@ -16,6 +16,7 @@ import io.suraj.projects.lovable.service.ProjectMemberService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import io.suraj.projects.lovable.entity.User;
 
@@ -37,6 +38,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     There is unecessary parameter userId , will check later
      */
     @Override
+    @PreAuthorize("@security.canViewMembers(#projectId)")
     public List<MemberResponse> getAllProjectMembers(String userId, Long projectId) {
         Project project=projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));
         List<MemberResponse> projectMembers = new ArrayList<>();
@@ -88,7 +90,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
 
 
 
-
+    @PreAuthorize("@security.canManageMembers(#projectId)")
     public MemberResponse updateMemberRole(Long projectId, String memberId, InviteMemberRequest request, String userId) {
 
 //        Project project = projectRepository.findByAccessbileProjects(userId,projectId).orElseThrow(()->new ResourseNotFoundException("no project member found for given user "));

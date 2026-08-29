@@ -1,5 +1,6 @@
 package io.suraj.projects.lovable.controller;
 
+import io.suraj.projects.lovable.config.SecurityExpressions;
 import io.suraj.projects.lovable.dto.project.ProjectRequest;
 import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
@@ -7,6 +8,8 @@ import io.suraj.projects.lovable.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,7 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping
+
     public ResponseEntity<List<ProjectSummeryResponse>> getMyProjects(){
         String userId ="";
         return ResponseEntity.ok(projectService.getUserProjects(userId));
@@ -31,7 +35,7 @@ public class ProjectController {
 
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody @Valid ProjectRequest request){
-        String userId ="";
+        String userId = SecurityExpressions.getUserId();
         return ResponseEntity.status(201).body(projectService.createProject(request , userId));
     }
 

@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -50,6 +51,7 @@ public class ProjectServiceImpl implements ProjectService {
     Below one is for finding particular project of user
      */
     @Override
+    @PreAuthorize("@security.hasViewPermission(#id)")
     public ProjectResponse getUserProjectById(Long id, String userId) {
       Project project=  projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given user id"+ userId));
         return projectMapper.toProjectResponse(project);
@@ -76,6 +78,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @PreAuthorize("@security.hasEditPermission(#id)")
     public ProjectResponse updateProject(Long id, ProjectRequest request, String userId) {
         Project project = projectRepository.findProjectByUserIdAndProjectId(id, userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setName(request.name());
@@ -84,6 +87,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
+    @PreAuthorize("@security.hasDeletePermission(#id)")
     public void softDelete(Long id, String userId) {
         Project project = projectRepository.findProjectByUserIdAndProjectId(id,userId).orElseThrow(()->new ResourseNotFoundException("no project found for given used id "+userId));
         project.setDeletedAt(Instant.now());
