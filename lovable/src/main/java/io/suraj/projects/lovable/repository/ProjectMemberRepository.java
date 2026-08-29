@@ -2,9 +2,11 @@ package io.suraj.projects.lovable.repository;
 
 import io.suraj.projects.lovable.entity.ProjectMember;
 import io.suraj.projects.lovable.entity.ProjectMemberId;
+import io.suraj.projects.lovable.entity.User;
 import io.suraj.projects.lovable.entity.enums.ProjectRole;
 import lombok.Builder;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,4 +17,16 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Pr
     List<ProjectMember> findByProjectId(Long projectId);
     Optional<ProjectMember> findById(ProjectMemberId projectMemberId);
     Optional<ProjectMember> findByProjectIdAndUserIdAndRole(Long projectId , String userId, ProjectRole role);
+
+    @Query(
+            """
+            SELECT pm.role FROM ProjectMember pm 
+            WHERE pm.project.id = :projectId 
+            AND pm.user.id = :userId
+            """
+    )
+
+    Optional<ProjectRole> findProjectRoleByUseridAndProjectId(String userId,Long projectId);
+
+    String user(User user);
 }

@@ -32,7 +32,8 @@ public interface ProjectRepository extends JpaRepository<Project,String> {
             """
             SELECT p FROM Project p JOIN FETCH ProjectMember pm 
                         on pm.project = p 
-                        where p.id=:project_id
+                        where pm.id.projectId=:projectId
+                        AND pm.id.userId=:userId
                         AND p.deletedAt is null
             """
     )
