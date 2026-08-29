@@ -42,7 +42,7 @@ public class WebConfiguration {
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(request -> request
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/auth/signup","/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST,"/api/auth/signup","/api/auth/login","/api/auth/users").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth2->
                         oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))

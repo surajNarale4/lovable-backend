@@ -29,7 +29,7 @@ public class SecurityExpressions {
 
     public boolean hasPermission(Long projectId, ProjectPermission permission){
         String userId= getUserId();
-        return projectMemberRepository.findProjectRoleByUseridAndProjectId(userId,projectId)
+        return projectMemberRepository.findProjectRoleByUseridAndProjectId(userId,Long.valueOf(projectId))
                 .map(role->role.getProjectPermissions().contains(permission))
                 .orElse(false);
 
