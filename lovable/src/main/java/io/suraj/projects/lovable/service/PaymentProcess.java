@@ -8,4 +8,5 @@ public interface PaymentProcess {
 
     CheckoutResponse getCheckoutUrl(CheckoutRequest checkoutRequest);
     PortalUrl openCustomerPortal();
+    String webhook(String payload,String header, String signature);
 }
