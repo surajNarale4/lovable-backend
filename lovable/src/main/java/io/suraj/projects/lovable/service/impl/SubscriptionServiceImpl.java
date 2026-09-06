@@ -105,6 +105,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         if(subscription.getStatus() != SubscriptionStatus.ACTIVE){
             subscription.setStatus(SubscriptionStatus.ACTIVE);
         }
+        subscriptionRepository.save(subscription);
     }
 
     @Override
