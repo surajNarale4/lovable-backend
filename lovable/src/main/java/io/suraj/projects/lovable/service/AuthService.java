@@ -6,6 +6,8 @@ import io.suraj.projects.lovable.dto.auth.LoginRequest;
 import io.suraj.projects.lovable.dto.auth.SignupRequest;
 import io.suraj.projects.lovable.dto.auth.UserProfileRespose;
 
+import java.util.List;
+
 public interface AuthService {
     
     String signup(SignupRequest request);
@@ -13,4 +15,6 @@ public interface AuthService {
     AuthResponse login(LoginRequest request);
 
     UserProfileRespose getProfile(String userId);
+
+    List<UserProfileRespose> getAllProfiles();
 }

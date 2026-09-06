@@ -5,6 +5,7 @@ import io.suraj.projects.lovable.dto.auth.AuthResponse;
 import io.suraj.projects.lovable.dto.auth.LoginRequest;
 import io.suraj.projects.lovable.dto.auth.SignupRequest;
 import io.suraj.projects.lovable.dto.auth.UserProfileRespose;
+import io.suraj.projects.lovable.entity.User;
 import io.suraj.projects.lovable.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -33,6 +36,11 @@ public class AuthController {
     public ResponseEntity<UserProfileRespose> getProfile(@AuthenticationPrincipal Jwt jwt){
         String userId = jwt.getSubject();
         return ResponseEntity.ok(authService.getProfile(userId));
+    }
+/*below method added for testing will secure leter with Getmapping*/
+    @PostMapping("/users")
+    public ResponseEntity<List<UserProfileRespose>> findall(){
+        return ResponseEntity.ok(authService.getAllProfiles());
     }
 
 }

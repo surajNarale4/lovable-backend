@@ -22,6 +22,9 @@ public class User {
     private String keycloakUserId;
     @Column(unique = true)
     private String email;
+
+    private String stripeCustomerId;
+
     private String passwordHash;
     private String name;
     private String avtarUrl;

@@ -97,4 +97,9 @@ public class AuthServiceImpl implements AuthService {
     public UserProfileRespose getProfile(String userId) {
         return userMapper.userToUserProfile(userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("no user found")));
     }
+
+    @Override
+    public List<UserProfileRespose> getAllProfiles() {
+        return userRepository.findAll().stream().map(userMapper::userToUserProfile).toList();
+    }
 }

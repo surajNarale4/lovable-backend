@@ -8,4 +8,6 @@ public interface SubscriptionService {
     SubscriptionResponse getMySub(Long userId);
 
     PortalResponse openCustomerPortal(Long userId);
+
+    void activateSubscription(String userId, Long planId, String subscriptionId);
 }

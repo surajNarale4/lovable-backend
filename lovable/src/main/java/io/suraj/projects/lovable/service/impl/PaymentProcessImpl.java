@@ -10,16 +10,22 @@ import io.suraj.projects.lovable.dto.subscription.CheckoutRequest;
 import io.suraj.projects.lovable.dto.subscription.CheckoutResponse;
 import io.suraj.projects.lovable.dto.subscription.PortalUrl;
 import io.suraj.projects.lovable.entity.Plan;
+import io.suraj.projects.lovable.entity.User;
+import io.suraj.projects.lovable.entity.enums.SubscriptionStatus;
 import io.suraj.projects.lovable.error.BadRequestException;
 import io.suraj.projects.lovable.error.ResourseNotFoundException;
 import io.suraj.projects.lovable.repository.PlanRepository;
+import io.suraj.projects.lovable.repository.UserRepository;
+import io.suraj.projects.lovable.security.SecurityExpressions;
 import io.suraj.projects.lovable.service.PaymentProcess;
+import io.suraj.projects.lovable.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Provider;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -27,18 +33,22 @@ import java.security.Provider;
 public class PaymentProcessImpl implements PaymentProcess {
 
     private final PlanRepository planRepository;
+    private final UserRepository userRepository;
+    private final SubscriptionService subscriptionService;
 
 
     @Override
     public CheckoutResponse getCheckoutUrl(CheckoutRequest checkoutRequest) {
         Plan plan = planRepository.findById(checkoutRequest.planId()).orElseThrow(()->new ResourseNotFoundException("Plan not found with given id "+ checkoutRequest.planId()));
-
+        User user = userRepository.findById(SecurityExpressions.getUserId()).orElseThrow(()->new ResourseNotFoundException("user not found with id "));
         SessionCreateParams params = SessionCreateParams.builder()
                 .addLineItem(
                         SessionCreateParams.LineItem.builder().setPrice(plan.getStripePriceId()).setQuantity(1L).build())
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
                 .setSuccessUrl("http://localhost:8080" + "/success.html?session_id={CHECKOUT_SESSION_ID}")
                 .setCancelUrl("http://localhost:8080" + "/cancel.html")
+                .putMetadata("user_id", user.getId())
+                .putMetadata("plan_id", plan.getId().toString())
                 .build();
 
         try {
@@ -68,29 +78,61 @@ public class PaymentProcessImpl implements PaymentProcess {
                 stripeObject = dataObjectDeserializer.getObject().get();
             } else {
                 //fallback if version missmatch
+                log.error(
+                        "Unable to deserialize Stripe webhook event. eventId={}, eventType={}, rawJson={}",
+                        event.getId(),
+                        event.getType(),
+                        dataObjectDeserializer.getRawJson()
+                );
             }
             // Handle the event
+            log.info("event occured : {}",event.getType());
             switch (event.getType()) {
-                case "invoice.payment_succeeded": // invoice.payment_succeeded
-                    PaymentIntent paymentIntent = (PaymentIntent) stripeObject;
-                    System.out.println("Payment for " + paymentIntent.getAmount() + " succeeded.");
-                    // Then define and call a method to handle the successful payment intent.
-                    // handlePaymentIntentSucceeded(paymentIntent);
-                    break;
-                case "invoice_payment.attached":
-                    PaymentMethod paymentMethod = (PaymentMethod) stripeObject;
-                    // Then define and call a method to handle the successful attachment of a PaymentMethod.
-                    // handlePaymentMethodAttached(paymentMethod);
-                    break;
-                default:
-                    System.out.println("Unhandled event type: " + event.getType());
-                    break;
+
+                case "checkout.session.completed"-> handleCheckoutCompleted((Session)stripeObject);
+                case "customer.subscription.updated" -> handleCustomerSubscriptionUpdated((Subscription) stripeObject);
+                default-> log.info("Unhandled event type: " + event.getType());
+
             }
 
             return "";
         } catch (SignatureVerificationException e) {
             throw new RuntimeException(e);
         }
+
+    }
+
+    private void handleCustomerSubscriptionUpdated(Subscription subscription) {
+
+        SubscriptionStatus status = SubscriptionStatus.valueOf(subscription.getStatus());
+
+
+    }
+
+    private void handleCheckoutCompleted(Session session) {
+
+        if(session == null) {
+            log.error("session object was null");
+            return;
+        }
+        Map<String, String> metadata=session.getMetadata();
+
+        String userId =metadata.get("user_id");
+        Long planId = Long.parseLong(metadata.get("plan_id"));
+
+        String subscriptionId = session.getSubscription();
+        String customerId = session.getCustomer();
+
+
+        User user = userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("no user found with given id"));
+        if(user.getStripeCustomerId()==null){
+            user.setStripeCustomerId(subscriptionId);
+            userRepository.save(user);
+        }
+
+        subscriptionService.activateSubscription(userId,planId,subscriptionId);
+
+
 
     }
 }

@@ -1,12 +1,10 @@
-package io.suraj.projects.lovable.config;
+package io.suraj.projects.lovable.security;
 
 
-import io.suraj.projects.lovable.entity.ProjectMember;
 import io.suraj.projects.lovable.entity.enums.ProjectPermission;
 import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
