@@ -92,7 +92,10 @@ public class PaymentProcessImpl implements PaymentProcess {
 
                 case "checkout.session.completed"-> handleCheckoutCompleted((Session)stripeObject);
                 case "customer.subscription.updated" -> handleCustomerSubscriptionUpdated((Subscription) stripeObject);
-                default-> log.info("Unhandled event type: " + event.getType());
+                case "customer.subscription.deleted" -> handleCustomerSubscriptionDeleted((Subscription) stripeObject); // when subscription ends, revoke the access
+                case "invoice.paid" -> handleInvoicePaid((Invoice) stripeObject); // when invoice is paid
+                case "invoice.payment_failed" -> handleInvoicePaymentFailed((Invoice) stripeObject); // when invoice is not paid, mark as PAST_DUE
+                default -> log.debug("Ignoring the event: {}", event.getType());
 
             }
 
@@ -102,6 +105,58 @@ public class PaymentProcessImpl implements PaymentProcess {
         }
 
     }
+
+    private void handleInvoicePaymentFailed(Invoice invoice) {
+        if (invoice == null) {
+            log.error("invoice object was null inside handle invoice payment failed");
+            return;
+        }
+        String subId = extractSubscriptionId(invoice);
+        subscriptionService.markSubscriptionPastDue(subId);
+
+    }
+
+    private void handleInvoicePaid(Invoice invoice) {
+        String subId = extractSubscriptionId(invoice);
+
+        if(subId == null) return;
+
+        try {
+            Subscription subscription = Subscription.retrieve(subId); //sdk calling the Stripe server
+            var item = subscription.getItems().getData().get(0);
+
+            Instant periodStart = toInstant(item.getCurrentPeriodStart());
+            Instant periodEnd = toInstant(item.getCurrentPeriodEnd());
+
+            subscriptionService.renewSubscriptionPeriod(
+                    subId,
+                    periodStart,
+                    periodEnd
+            );
+
+        } catch (StripeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String extractSubscriptionId(Invoice invoice) {
+        var parent = invoice.getParent();
+        if (parent == null) return null;
+
+        var subDetails = parent.getSubscriptionDetails();
+        if (subDetails == null) return null;
+
+        return subDetails.getSubscription();
+    }
+
+    private void handleCustomerSubscriptionDeleted(Subscription subscription) {
+        if (subscription == null) {
+            log.error("subscription object was null inside handleCustomerSubscriptionDeleted");
+            return;
+        }
+        subscriptionService.cancelSubscription(subscription.getId());
+    }
+
     /*
     * status (Possible values are)
     *   incomplete,

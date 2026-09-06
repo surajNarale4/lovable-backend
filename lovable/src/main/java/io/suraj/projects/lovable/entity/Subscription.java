@@ -2,15 +2,14 @@ package io.suraj.projects.lovable.entity;
 
 import io.suraj.projects.lovable.entity.enums.SubscriptionStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 @Entity
 @Builder
+@Setter @Getter
 @AllArgsConstructor @NoArgsConstructor
 public class Subscription {
 

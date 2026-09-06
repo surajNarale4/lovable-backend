@@ -90,6 +90,41 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     }
 
+    @Override
+    public void cancelSubscription(String id) {
+        Subscription subscription = getSubscription(id);
+        subscription.setStatus(SubscriptionStatus.CANCELED);
+        subscriptionRepository.save(subscription);
+    }
+
+    @Override
+    public void renewSubscriptionPeriod(String subId, Instant periodStart, Instant periodEnd) {
+        Subscription subscription = getSubscription(subId);
+        subscription.setCurrentPeriodStart(periodStart);
+        subscription.setCurrentPeriodEnd(periodEnd);
+        if(subscription.getStatus() != SubscriptionStatus.ACTIVE){
+            subscription.setStatus(SubscriptionStatus.ACTIVE);
+        }
+    }
+
+    @Override
+    public void markSubscriptionPastDue(String subId) {
+        Subscription subscription = getSubscription(subId);
+
+        if(subscription.getStatus() == SubscriptionStatus.PAST_DUE) {
+            log.debug("Subscription is already past due, gatewaySubscriptionId: {}", subId);
+            return;
+        }
+        subscription.setStatus(SubscriptionStatus.PAST_DUE);
+        subscriptionRepository.save(subscription);
+    }
+
+    private Subscription getSubscription(String gatewaySubscriptionId) {
+        return subscriptionRepository.findByStripeSubscriptionId(gatewaySubscriptionId).orElseThrow(() ->
+                new ResourseNotFoundException("Subscription"+ gatewaySubscriptionId));
+
+    }
+
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
                 .orElseThrow(() -> new ResourseNotFoundException("Plan"+ planId.toString()));
