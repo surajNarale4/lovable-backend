@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Provider;
+import java.time.Instant;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -101,12 +102,38 @@ public class PaymentProcessImpl implements PaymentProcess {
         }
 
     }
-
+    /*
+    * status (Possible values are)
+    *   incomplete,
+    *   incomplete_expired,
+    *   trialing,
+    *   active,
+    *   past_due,
+    *   canceled,
+    *   unpaid,
+    *   or paused.
+    * */
     private void handleCustomerSubscriptionUpdated(Subscription subscription) {
 
         SubscriptionStatus status = SubscriptionStatus.valueOf(subscription.getStatus());
 
+        SubscriptionItem item = subscription.getItems().getData().get(0);
+        Instant periodStart = toInstant(item.getCurrentPeriodStart());
+        Instant periodEnd = toInstant(item.getCurrentPeriodEnd());
+        Long planId = resolvePlanId(item.getPrice());
+        subscriptionService.updateSubscription(
+                subscription.getId(), status, periodStart, periodEnd,
+                subscription.getCancelAtPeriodEnd(), planId
+        );
 
+
+    }
+
+    private Long resolvePlanId(Price price) {
+        if (price == null || price.getId() == null) return null;
+        return planRepository.findByStripePriceId(price.getId())
+                .map(Plan::getId)
+                .orElse(null);
     }
 
     private void handleCheckoutCompleted(Session session) {
@@ -134,5 +161,8 @@ public class PaymentProcessImpl implements PaymentProcess {
 
 
 
+    }
+    public Instant toInstant(Long epoch){
+        return epoch!=null? Instant.ofEpochSecond(epoch) :null;
     }
 }

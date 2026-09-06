@@ -2,6 +2,9 @@ package io.suraj.projects.lovable.service;
 
 import io.suraj.projects.lovable.dto.subscription.PortalResponse;
 import io.suraj.projects.lovable.dto.subscription.SubscriptionResponse;
+import io.suraj.projects.lovable.entity.enums.SubscriptionStatus;
+
+import java.time.Instant;
 
 public interface SubscriptionService {
 
@@ -10,4 +13,6 @@ public interface SubscriptionService {
     PortalResponse openCustomerPortal(Long userId);
 
     void activateSubscription(String userId, Long planId, String subscriptionId);
+
+    void updateSubscription(String id, SubscriptionStatus status, Instant periodStart, Instant periodEnd, Boolean cancelAtPeriodEnd, Long planId);
 }

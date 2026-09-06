@@ -1,7 +1,13 @@
 package io.suraj.projects.lovable.repository;
 
+import com.stripe.net.HttpHeaders;
 import io.suraj.projects.lovable.entity.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
+@Repository
 public interface PlanRepository extends JpaRepository<Plan,Long> {
+    Optional<Plan> findByStripePriceId(String id);
 }
