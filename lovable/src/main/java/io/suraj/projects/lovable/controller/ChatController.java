@@ -19,6 +19,9 @@ public class ChatController {
 
     @PostMapping(value="/stream" ,produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<String>> stream(@RequestBody ChatRequest request){
-        return aiGeneratorService.streamResponse(request.message(), request.projectId());
+        return aiGeneratorService.streamResponse(request.message(), request.projectId())
+                .map(data->ServerSentEvent.<String>builder()
+                        .data(data)
+                        .build());
     }
 }
