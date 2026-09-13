@@ -15,6 +15,7 @@ import io.suraj.projects.lovable.service.ProjectFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -27,8 +28,8 @@ import java.util.regex.Pattern;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class AiGenerationServiceImpl implements AiGenerationService {
+
 
     private final ChatClient chatClient;
     private final ProjectRepository projectRepository;
@@ -37,6 +38,13 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final ChatSessionRepository chatSessionRepository;
     private final static Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>",Pattern.DOTALL);
 
+    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient, ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository){
+        this.chatClient= chatClient;
+        this.projectRepository = projectRepository;
+        this.userRepository = userRepository;
+        this.projectFileService = projectFileService;
+        this.chatSessionRepository = chatSessionRepository;
+    }
 
 
     @Override

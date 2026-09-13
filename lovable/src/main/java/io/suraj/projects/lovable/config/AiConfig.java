@@ -10,8 +10,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AiConfig {
 
-    @Bean
-    public ChatClient chatClient(@Qualifier("ollamaChatModel") ChatModel ollamaChatModel){
+
+    @Bean("ollamaChatClient")
+    public ChatClient ollama(@Qualifier("ollamaChatModel") ChatModel ollamaChatModel){
         return ChatClient.builder(ollamaChatModel).build();
     }
+
+    @Bean("openAiChatClient")
+    public ChatClient openAi(@Qualifier("openAiChatModel") ChatModel openAiChatModel){
+        return ChatClient.builder(openAiChatModel).build();
+    }
+
+
+
+
 }
