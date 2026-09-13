@@ -40,14 +40,14 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 
 
     @Override
-    @PreAuthorize("@security.hasEditPermission(#projectId)")
+//    @PreAuthorize("@security.hasEditPermission(#projectId)")
     public Flux<String> streamResponse(String message, Long projectId) {
 
-        String userId = SecurityExpressions.getUserId();
-
+//        String userId = SecurityExpressions.getUserId();
+          String userId = "k";
         StringBuffer responseBuffer = new StringBuffer();
 
-        createChatSessionIfNotExist(projectId,userId);
+       // createChatSessionIfNotExist(projectId,userId);
 
         projectId = 1L;
         Map<String,Object> advisorParams= Map.of(

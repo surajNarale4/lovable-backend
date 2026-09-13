@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProjectRepository extends JpaRepository<Project,String> {
+public interface ProjectRepository extends JpaRepository<Project,Long> {
 
     /*
     Gethering All Projects with ProjectMember EARER Fetch

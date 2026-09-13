@@ -20,6 +20,11 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://localhost:8080/realms/ai-client
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: gemma3:4b
 server:
   port: 8081
 
@@ -35,3 +40,9 @@ logging:
       springframework:
         security: Trace
     io.suraj.projects.lovable: info
+#wrong key
+stripe:
+    api:
+        secret: sk_test_51U9jfbwrongR0FW4vuqA4p6GjG5j83mjPjV3D40000fTvTvwIN
+    webhook:
+      secret: whsec_wronga19b8b6002449b18f7a947a60262

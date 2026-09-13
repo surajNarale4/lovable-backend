@@ -1,9 +1,10 @@
 package io.suraj.projects.lovable.controller;
 
-import io.suraj.projects.lovable.config.SecurityExpressions;
+
 import io.suraj.projects.lovable.dto.project.ProjectRequest;
 import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
+import io.suraj.projects.lovable.security.SecurityExpressions;
 import io.suraj.projects.lovable.service.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

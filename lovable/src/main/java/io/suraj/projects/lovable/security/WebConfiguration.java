@@ -1,6 +1,7 @@
 package io.suraj.projects.lovable.security;
 
 
+import io.suraj.projects.lovable.config.KeycloakJwtAuthenticationConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,11 +32,11 @@ public class WebConfiguration {
                 .cors(cors->cors.configurationSource(corsConfig())) //overrided in this class already
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(request -> request
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,"/api/auth/signup","/api/auth/login","/api/auth/users","/webhook/payment").permitAll()
-                        .anyRequest().authenticated())
-//                .authorizeHttpRequests(r->r.anyRequest().permitAll())
+//                .authorizeHttpRequests(request -> request
+//                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST,"/api/auth/signup","/api/auth/login","/api/auth/users","/webhook/payment").permitAll()
+//                        .anyRequest().authenticated())
+                  .authorizeHttpRequests(r->r.anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2->
                         oauth2.jwt(jwt->jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
                 .build();

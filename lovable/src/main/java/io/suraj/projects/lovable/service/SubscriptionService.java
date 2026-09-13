@@ -1,6 +1,5 @@
 package io.suraj.projects.lovable.service;
 
-import com.stripe.model.Invoice;
 import io.suraj.projects.lovable.dto.subscription.PortalResponse;
 import io.suraj.projects.lovable.dto.subscription.SubscriptionResponse;
 import io.suraj.projects.lovable.entity.enums.SubscriptionStatus;
