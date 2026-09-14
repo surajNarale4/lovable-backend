@@ -1,4 +1,6 @@
 services:
+
+
   postgres:
     image: postgres:17
     container_name: postgres
@@ -8,6 +10,19 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: elestio/minio
+    container_name: lovable-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.2
@@ -32,5 +47,6 @@ services:
 
 volumes:
   postgres_data:
+  minio_data:
 
       
