@@ -52,7 +52,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     public Flux<String> streamResponse(String message, Long projectId) {
 
 //        String userId = SecurityExpressions.getUserId();
-          String userId = "k";
+        String userId = "k";
         StringBuffer responseBuffer = new StringBuffer();
 
        // createChatSessionIfNotExist(projectId,userId);
