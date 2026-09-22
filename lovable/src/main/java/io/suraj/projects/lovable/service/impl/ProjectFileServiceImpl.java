@@ -7,6 +7,7 @@ import io.suraj.projects.lovable.dto.project.FileNode;
 import io.suraj.projects.lovable.entity.Project;
 import io.suraj.projects.lovable.entity.ProjectFile;
 import io.suraj.projects.lovable.error.ResourseNotFoundException;
+import io.suraj.projects.lovable.mapper.ProjectFIleMapper;
 import io.suraj.projects.lovable.repository.ProjectFileRepository;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.service.ProjectFileService;
@@ -32,11 +33,15 @@ public class ProjectFileServiceImpl implements ProjectFileService {
 
     private final ProjectFileRepository projectFileRepository;
     private final ProjectRepository projectRespository;
+    private final ProjectFIleMapper projectFIleMapper;
     private final MinioClient minioClient;
 
     @Override
-    public List<FileNode> getFileTree(Long projectId, Long userId) {
-        return List.of();
+    public List<FileNode> getFileTree(Long projectId) {
+
+      List<ProjectFile> projectFiles = projectFileRepository.findByProjectId(projectId);
+      List<FileNode> nodes = projectFIleMapper.toFileNodes(projectFiles);
+      return nodes;
     }
 
     @Override
