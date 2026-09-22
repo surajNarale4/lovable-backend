@@ -22,15 +22,14 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @GetMapping
-
     public ResponseEntity<List<ProjectSummeryResponse>> getMyProjects(){
-        String userId ="";
+        String userId = SecurityExpressions.getUserId();
         return ResponseEntity.ok(projectService.getUserProjects(userId));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponse> getProjectById(@PathVariable Long id){
-        String userId="";
+        String userId = SecurityExpressions.getUserId();
         return ResponseEntity.ok(projectService.getUserProjectById(id , userId));
     }
 
@@ -42,13 +41,13 @@ public class ProjectController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id , @RequestBody @Valid ProjectRequest request){
-        String userId ="";
+        String userId = SecurityExpressions.getUserId();
         return ResponseEntity.ok(projectService.updateProject(id,request,userId));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id){
-        String userId ="";
+        String userId = SecurityExpressions.getUserId();
         projectService.softDelete(id, userId);
         return ResponseEntity.noContent().build();
     }
