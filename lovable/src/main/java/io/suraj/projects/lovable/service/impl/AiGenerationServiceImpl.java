@@ -1,5 +1,6 @@
 package io.suraj.projects.lovable.service.impl;
 
+import io.suraj.projects.lovable.advisor.FilePathAdvisor;
 import io.suraj.projects.lovable.entity.ChatSession;
 import io.suraj.projects.lovable.entity.ChatSessionId;
 import io.suraj.projects.lovable.entity.Project;
@@ -37,38 +38,44 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final ProjectFileService projectFileService;
     private final ChatSessionRepository chatSessionRepository;
     private final static Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>",Pattern.DOTALL);
+    private final FilePathAdvisor filePathAdvisor;
 
-    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient, ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository){
+    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient, ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository, FilePathAdvisor filePathAdvisor){
         this.chatClient= chatClient;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectFileService = projectFileService;
         this.chatSessionRepository = chatSessionRepository;
+        this.filePathAdvisor = filePathAdvisor;
     }
 
 
     @Override
-//    @PreAuthorize("@security.hasEditPermission(#projectId)")
+    @PreAuthorize("@security.hasEditPermission(#projectId)")
     public Flux<String> streamResponse(String message, Long projectId) {
 
-//        String userId = SecurityExpressions.getUserId();
-        String userId = "k";
+        String userId = SecurityExpressions.getUserId();
+        // String userId = "k";
         StringBuffer responseBuffer = new StringBuffer();
 
-       // createChatSessionIfNotExist(projectId,userId);
+        createChatSessionIfNotExist(projectId,userId);
 
-        projectId = 1L;
+        //projectId = 1L;
         Map<String,Object> advisorParams= Map.of(
                 "userId",userId,
                 "projectId",projectId
         );
 
 
-        Long finalProjectId = projectId;
+//        Long finalProjectId = projectId;
         return chatClient.prompt()
                 .system(Prompt.SYSTEM_PROMPT)
                 .user(message)
-                .advisors(advisorSpec -> advisorSpec.params(advisorParams))
+                .advisors(advisorSpec -> {
+                            advisorSpec.params(advisorParams);
+                            advisorSpec.advisors(filePathAdvisor);
+                        }
+                )
                 .stream()
                 .chatResponse()
                 .doOnNext(response->{
@@ -76,11 +83,11 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                     responseBuffer.append(re);
                 })
                 .doOnComplete(()->{
-                    Schedulers.boundedElastic().schedule(()->parseAndSaveFile(responseBuffer, finalProjectId));
+                    Schedulers.boundedElastic().schedule(()->parseAndSaveFile(responseBuffer, projectId));
 
                 })
                 .doOnError(error->{
-                    log.error("error during streaming project id :{}", finalProjectId);
+                    log.error("error during streaming project id :{}", projectId);
                 })
                 .map(response-> Objects.requireNonNull(Objects.requireNonNull(response.getResult()).getOutput().getText()));
     }
@@ -111,10 +118,8 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                     .project(project)
                     .id(chatSessionId)
                     .build();
-
             chatSessionRepository.save(chatSession);
         }
         return chatSession;
-
     }
 }
