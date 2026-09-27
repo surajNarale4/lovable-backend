@@ -1,5 +1,8 @@
 package io.suraj.projects.lovable.service.impl;
 
+import io.minio.*;
+import io.minio.errors.*;
+import io.minio.messages.Item;
 import io.suraj.projects.lovable.dto.project.ProjectRequest;
 import io.suraj.projects.lovable.dto.project.ProjectResponse;
 import io.suraj.projects.lovable.dto.project.ProjectSummeryResponse;
@@ -12,16 +15,22 @@ import io.suraj.projects.lovable.mapper.ProjectMapper;
 import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
+import io.suraj.projects.lovable.service.ProjectFileService;
 import io.suraj.projects.lovable.service.ProjectMemberService;
 import io.suraj.projects.lovable.service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +38,22 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final Keycloak keycloak;
+
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
     private final ProjectMemberRepository projectMemberRepository;
+    private final MinioClient minioClient;
+    private final ProjectFileService projectFileService;
+    @Value("${minio.template-bucket-name}")
+    private  String templateBucketName;
+    @Value("${minio.bucket-name}")
+    private String bucketName;
+
     @Override
     public List<ProjectSummeryResponse> getUserProjects(String userId) {
         User user =  userRepository.findById(userId).orElseThrow(()->new ResourseNotFoundException("user not found for given user id"));
@@ -43,7 +61,6 @@ public class ProjectServiceImpl implements ProjectService {
         return projects.stream()
                 .map(projectMapper::toProjectSummeryResponse)
                 .toList();
-
 
     }
 
@@ -72,9 +89,58 @@ public class ProjectServiceImpl implements ProjectService {
 //        UserResource userResource=keycloak.realm("").users().get(userId);
 //        UserRepresentation userRepresentation =userResource.toRepresentation();
 //        userRepresentation.setRealmRoles(List.of(String.valueOf(ProjectRole.OWNER)));
-        return projectMapper.toProjectResponse(projectRepository.save(project));
+        projectRepository.save(project);
+        saveProjectTemplate(project);
+        return projectMapper.toProjectResponse(project);
 
 
+    }
+
+    public void saveProjectTemplate(Project project) {
+        Iterable<Result<Item>> results;
+        try {
+            results = minioClient.listObjects(
+                    ListObjectsArgs.builder()
+                            .bucket(templateBucketName)
+                            .recursive(true)
+                            .build()
+            );
+        } catch (Exception e) {
+            log.error("Failed to list objects in template bucket '{}' for project {}",
+                    templateBucketName, project.getId(), e);
+            throw new RuntimeException("Could not list template objects", e);
+        }
+
+        int copiedCount = 0;
+        for (Result<Item> result : results) {
+            try {
+                Item item = result.get();
+                String filePath = project.getId() + "/" + item.objectName();
+                projectFileService.saveFilePath(project,filePath);
+                minioClient.copyObject(
+                        CopyObjectArgs.builder()
+                                .bucket(bucketName)
+                                .object(filePath)
+                                .source(
+                                        CopySource.builder()
+                                                .bucket(templateBucketName)
+                                                .object(item.objectName())
+                                                .build()
+                                ).build()
+                );
+                copiedCount++;
+            } catch (Exception e) {
+                log.error("Failed to copy template object for project {}", project.getId(), e);
+                // decide: skip and continue, or rethrow to fail the whole operation
+            }
+        }
+
+        if (copiedCount == 0) {
+            log.warn("No template objects were copied for project {} — template bucket '{}' may be empty or misnamed",
+                    project.getId(), templateBucketName);
+        } else {
+            log.info("Copied {} template objects for project {}", copiedCount, project.getId());
+        }
     }
 
     @Override

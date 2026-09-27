@@ -1,4 +1,4 @@
-package io.suraj.projects.lovable.advisor;
+package io.suraj.projects.lovable.llm.advisor;
 
 import io.suraj.projects.lovable.dto.project.FileNode;
 import io.suraj.projects.lovable.service.ProjectFileService;

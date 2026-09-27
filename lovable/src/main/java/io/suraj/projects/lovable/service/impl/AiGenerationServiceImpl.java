@@ -1,19 +1,19 @@
 package io.suraj.projects.lovable.service.impl;
 
-import io.suraj.projects.lovable.advisor.FilePathAdvisor;
+import io.suraj.projects.lovable.llm.advisor.FilePathAdvisor;
 import io.suraj.projects.lovable.entity.ChatSession;
 import io.suraj.projects.lovable.entity.ChatSessionId;
 import io.suraj.projects.lovable.entity.Project;
 import io.suraj.projects.lovable.entity.User;
 import io.suraj.projects.lovable.error.ResourseNotFoundException;
 import io.suraj.projects.lovable.llm.Prompt;
+import io.suraj.projects.lovable.llm.tool.CodeGenerationTools;
 import io.suraj.projects.lovable.repository.ChatSessionRepository;
 import io.suraj.projects.lovable.repository.ProjectRepository;
 import io.suraj.projects.lovable.repository.UserRepository;
 import io.suraj.projects.lovable.security.SecurityExpressions;
 import io.suraj.projects.lovable.service.AiGenerationService;
 import io.suraj.projects.lovable.service.ProjectFileService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -33,6 +33,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 
 
     private final ChatClient chatClient;
+
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ProjectFileService projectFileService;
@@ -40,8 +41,10 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final static Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>",Pattern.DOTALL);
     private final FilePathAdvisor filePathAdvisor;
 
-    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient, ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository, FilePathAdvisor filePathAdvisor){
+
+    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient,  ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository, FilePathAdvisor filePathAdvisor){
         this.chatClient= chatClient;
+
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectFileService = projectFileService;
@@ -57,6 +60,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
         String userId = SecurityExpressions.getUserId();
         // String userId = "k";
         StringBuffer responseBuffer = new StringBuffer();
+        CodeGenerationTools generationTools = new CodeGenerationTools(projectFileService,projectId);
 
         createChatSessionIfNotExist(projectId,userId);
 
@@ -71,6 +75,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
         return chatClient.prompt()
                 .system(Prompt.SYSTEM_PROMPT)
                 .user(message)
+                .tools(generationTools)
                 .advisors(advisorSpec -> {
                             advisorSpec.params(advisorParams);
                             advisorSpec.advisors(filePathAdvisor);

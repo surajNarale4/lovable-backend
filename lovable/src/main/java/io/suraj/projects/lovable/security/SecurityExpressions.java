@@ -5,6 +5,7 @@ import io.suraj.projects.lovable.entity.enums.ProjectPermission;
 import io.suraj.projects.lovable.repository.ProjectMemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -17,12 +18,19 @@ public class SecurityExpressions {
     /*
     will check below getUserId later
      */
-    public static String getUserId(){
-        Jwt jwt=(Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        log.info("user id ={}",jwt);
-        assert jwt != null;
-        return jwt.getSubject();
+    public static String getUserId() {
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            log.error("No valid JWT found in security context; principal type: {}",
+                    authentication == null ? "null" : authentication.getPrincipal().getClass());
+            throw new IllegalStateException("No authenticated JWT principal found");
+        }
+
+        String userId = jwt.getSubject();
+        log.debug("Resolved user id: {}", userId);
+        return userId;
     }
 
     public boolean hasPermission(Long projectId, ProjectPermission permission){

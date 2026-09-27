@@ -1,5 +1,6 @@
 package io.suraj.projects.lovable.service.impl;
 
+import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.suraj.projects.lovable.dto.project.FileContentResponse;
@@ -31,6 +32,9 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     @Value("${minio.bucket-name}")
     private String projectBucket;
 
+    @Value("${minio.bucket-name}")
+    private String BUCKET_NAME;
+
     private final ProjectFileRepository projectFileRepository;
     private final ProjectRepository projectRespository;
     private final ProjectFIleMapper projectFIleMapper;
@@ -40,13 +44,25 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     public List<FileNode> getFileTree(Long projectId) {
 
       List<ProjectFile> projectFiles = projectFileRepository.findByProjectId(projectId);
-      List<FileNode> nodes = projectFIleMapper.toFileNodes(projectFiles);
-      return nodes;
+        return projectFIleMapper.toFileNodes(projectFiles);
     }
 
     @Override
-    public FileContentResponse getFileContent(Long projectId, String path, Long userId) {
-        return null;
+    public FileContentResponse getFileContent(Long projectId, String path) {
+        String objectName = projectId + "/" + path;
+        try (
+                InputStream is = minioClient.getObject(
+                        GetObjectArgs.builder()
+                                .bucket(BUCKET_NAME)
+                                .object(objectName)
+                                .build())) {
+
+            String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+            return new FileContentResponse(path, content);
+        } catch (Exception e) {
+            log.error("Failed to read file: {}/{}", projectId, path, e);
+            throw new RuntimeException("Failed to read file content", e);
+        }
     }
 
     @Override
@@ -71,13 +87,7 @@ public class ProjectFileServiceImpl implements ProjectFileService {
                             .build());
 
             // Saving the metaData
-            ProjectFile file = projectFileRepository.findByProjectIdAndPath(projectId, cleanPath)
-                    .orElseGet(() -> ProjectFile.builder()
-                            .project(project)
-                            .path(cleanPath)
-                            .minioObjectKey(objectKey) // Use the key we generated
-                            .createdAt(Instant.now())
-                            .build());
+            ProjectFile file = saveFilePath(project,cleanPath);
 
             file.setUpdatedAt(Instant.now());
             projectFileRepository.save(file);
@@ -87,6 +97,17 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             throw new RuntimeException("File save failed", e);
         }
 
+    }
+
+     public ProjectFile saveFilePath(Project project, String filePath){
+       ProjectFile projectFile = projectFileRepository.findByProjectIdAndPath(project.getId(),filePath)
+                .orElse(
+                        ProjectFile.builder()
+                                .project(project)
+                                .path(filePath)
+                                .build()
+                );
+       return projectFileRepository.save(projectFile);
     }
 
     private String determineContentType(String path) {
