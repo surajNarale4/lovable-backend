@@ -17,6 +17,7 @@ import io.suraj.projects.lovable.service.ProjectFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -42,14 +43,31 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final FilePathAdvisor filePathAdvisor;
 
 
-    public AiGenerationServiceImpl(@Qualifier("openAiChatClient") ChatClient chatClient,  ProjectRepository projectRepository, UserRepository userRepository, ProjectFileService projectFileService, ChatSessionRepository chatSessionRepository, FilePathAdvisor filePathAdvisor){
-        this.chatClient= chatClient;
+
+
+    public AiGenerationServiceImpl(Map<String,ChatClient> chatClients ,
+                                   @Value("${spring.ai.chat-client}") String chatClientName,
+                                   ProjectRepository projectRepository,
+                                   UserRepository userRepository,
+                                   ProjectFileService projectFileService,
+                                   ChatSessionRepository chatSessionRepository,
+                                   FilePathAdvisor filePathAdvisor){
+
+        this.chatClient= getChatClient(chatClients,chatClientName);
 
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
         this.projectFileService = projectFileService;
         this.chatSessionRepository = chatSessionRepository;
         this.filePathAdvisor = filePathAdvisor;
+    }
+
+    private ChatClient getChatClient(Map<String, ChatClient> chatClients, String chatClientName) {
+        ChatClient chatClient =chatClients.get(chatClientName);
+        if(chatClient == null){
+            log.info("mentioned chat client in application level is invalid: {}",chatClientName);
+        }
+        return chatClient;
     }
 
 
