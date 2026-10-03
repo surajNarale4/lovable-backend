@@ -34,9 +34,9 @@ DEV_PORT = 5173  # Vite's default dev server port
 
 
 def is_port_in_use(port: int, host: str = "127.0.0.1") -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as sock:
         sock.settimeout(0.5)
-        return sock.connect_ex((host, port)) == 0
+        return sock.connect_ex(('::1', port)) == 0
 
 
 def download_project(project_id: str, output_dir: Path) -> None:
