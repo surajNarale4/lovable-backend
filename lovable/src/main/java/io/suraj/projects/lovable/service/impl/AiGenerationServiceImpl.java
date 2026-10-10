@@ -66,8 +66,11 @@ public class AiGenerationServiceImpl implements AiGenerationService {
         ChatClient chatClient =chatClients.get(chatClientName);
         if(chatClient == null){
             log.info("mentioned chat client in application level is invalid: {}",chatClientName);
+            log.info("changing chat client to ollamaChatClient as OpenAiChatClient is null ");
+            return chatClients.get("ollamaChatClient");
         }
-        return chatClient;
+        log.info("application is using {} chat client",chatClientName);
+       return chatClient;
     }
 
 
@@ -91,18 +94,21 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 
 //        Long finalProjectId = projectId;
         return chatClient.prompt()
-                .system(Prompt.SYSTEM_PROMPT)
+                .system(Prompt.SYSTEM_PROMPT_OLLAMA)
                 .user(message)
                 .tools(generationTools)
                 .advisors(advisorSpec -> {
-                            advisorSpec.params(advisorParams);
                             advisorSpec.advisors(filePathAdvisor);
+                            advisorSpec.params(advisorParams);
+
                         }
                 )
                 .stream()
                 .chatResponse()
                 .doOnNext(response->{
+                   // response.getMetadata().getPromptMetadata().forEach(p-> log.debug("prompt index :{}",p));
                     String re= response.getResult().getOutput().getText();
+                    log.info("got the chunk {}",re);
                     responseBuffer.append(re);
                 })
                 .doOnComplete(()->{

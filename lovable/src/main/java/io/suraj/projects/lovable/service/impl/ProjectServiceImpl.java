@@ -97,6 +97,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     public void saveProjectTemplate(Project project) {
+
         Iterable<Result<Item>> results;
         try {
             results = minioClient.listObjects(
@@ -116,7 +117,9 @@ public class ProjectServiceImpl implements ProjectService {
             try {
                 Item item = result.get();
                 String filePath = project.getId() + "/" + item.objectName();
+                log.info("Files are saved for projectId {} and the file path is {}",project.getId(),filePath);
                 projectFileService.saveFilePath(project,filePath);
+
                 minioClient.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(bucketName)

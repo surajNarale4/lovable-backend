@@ -35,6 +35,9 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     @Value("${minio.bucket-name}")
     private String BUCKET_NAME;
 
+    @Value("${minio.template_folder}")
+    private String TEMPLATE_FOLDER;
+
     private final ProjectFileRepository projectFileRepository;
     private final ProjectRepository projectRespository;
     private final ProjectFIleMapper projectFIleMapper;
@@ -48,8 +51,7 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     }
 
     @Override
-    public FileContentResponse getFileContent(Long projectId, String path) {
-        String objectName = projectId + "/" + path;
+    public FileContentResponse getFileContent(Long projectId, String objectName) {
         try (
                 InputStream is = minioClient.getObject(
                         GetObjectArgs.builder()
@@ -58,21 +60,26 @@ public class ProjectFileServiceImpl implements ProjectFileService {
                                 .build())) {
 
             String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            return new FileContentResponse(path, content);
+            return new FileContentResponse(objectName, content);
         } catch (Exception e) {
-            log.error("Failed to read file: {}/{}", projectId, path, e);
+            log.error("Failed to read file: {}", projectId, objectName, e);
             throw new RuntimeException("Failed to read file content", e);
         }
     }
 
     @Override
     public void saveFile(Long projectId, String path, String content) {
+
         log.info("file path : {}",path);
+
         log.info("file content : {}",content);
 
         Project project = projectRespository.findById(projectId).orElseThrow(()->new ResourseNotFoundException("project not found with id "+projectId));
         String cleanPath = path.startsWith("/") ? path.substring(1) : path;
-        String objectKey = projectId + "/" + cleanPath;
+        String objectKey = projectId + "/"+ TEMPLATE_FOLDER+"/"+ cleanPath;
+
+        //file objectKye should look like projectId+"/"+TEMPLATE_FOLDER+ "/" + path; as we not corrently using minio object column
+        //the corrent path value is src/App.tsx now change it to projectid/TEMPLATE_FOLDER/path
 
         try {
             byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
@@ -108,6 +115,17 @@ public class ProjectFileServiceImpl implements ProjectFileService {
                                 .build()
                 );
        return projectFileRepository.save(projectFile);
+    }
+
+    public ProjectFile saveMinioObject(Project project, String object) {
+        ProjectFile projectFile = projectFileRepository.findByProjectIdAndPath(project.getId(),object)
+                .orElse(
+                        ProjectFile.builder()
+                                .project(project)
+                                .minioObjectKey(object)
+                                .build()
+                );
+        return projectFileRepository.save(projectFile);
     }
 
     private String determineContentType(String path) {

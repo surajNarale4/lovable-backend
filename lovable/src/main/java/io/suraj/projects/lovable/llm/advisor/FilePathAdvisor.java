@@ -5,12 +5,14 @@ import io.suraj.projects.lovable.repository.ChatSessionRepository;
 import io.suraj.projects.lovable.service.ProjectFileService;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.client.advisor.api.StreamAdvisor;
 import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import  org.springframework.ai.chat.messages.Message;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
+@Slf4j
 public class FilePathAdvisor implements StreamAdvisor {
 
     private final ProjectFileService projectFileService;
@@ -44,7 +47,7 @@ public class FilePathAdvisor implements StreamAdvisor {
 
         String newSystemPrompt = systemContext + "\n"+"------File Section-------"+"\n\n"+fileSection;
         ChatClientRequest newChaClientRequest = changeSystemPrompt(chatClientRequest,newSystemPrompt);
-
+        log.debug("the new system message is ={}",chatClientRequest.prompt().getSystemMessage());
         return streamAdvisorChain.nextStream(newChaClientRequest);
 
     }
@@ -62,7 +65,8 @@ public class FilePathAdvisor implements StreamAdvisor {
             }
         }
         Prompt newPrompt = new Prompt(messages,oldPrompt.getOptions());
-        return chatClientRequest.builder().prompt(newPrompt).build();
+        return new ChatClientRequest(newPrompt,chatClientRequest.context());
+
     }
 
     @Override
@@ -72,6 +76,6 @@ public class FilePathAdvisor implements StreamAdvisor {
 
     @Override
     public int getOrder() {
-        return 1;
+        return Ordered.HIGHEST_PRECEDENCE;
     }
 }

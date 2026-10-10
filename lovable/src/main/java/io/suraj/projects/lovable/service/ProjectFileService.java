@@ -13,6 +13,6 @@ public interface ProjectFileService {
 
     FileContentResponse getFileContent(Long projectId, String path);
     ProjectFile saveFilePath(Project project, String filePath);
-
+    public ProjectFile saveMinioObject(Project project, String object);
     void saveFile(Long projectId, String filePath, String fileContent);
 }
