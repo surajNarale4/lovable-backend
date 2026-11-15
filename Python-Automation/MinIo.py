@@ -129,7 +129,7 @@ def main() -> None:
 
     run_npm_install(output_dir)
     print(f"Project ready at: {output_dir}")
-    run_npm_dev(output_dir)
+    #run_npm_dev(output_dir)
 
 
 if __name__ == "__main__":
