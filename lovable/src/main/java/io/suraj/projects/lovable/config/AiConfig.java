@@ -11,6 +11,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AiConfig {
 
+    @Bean("geminiChatClient")
+    public ChatClient gemini(
+            @Qualifier("googleGenAiChatModel") ChatModel geminiChatModel) {
+
+        return ChatClient.builder(geminiChatModel)
+                .defaultAdvisors(
+                        new SimpleLoggerAdvisor()
+                )
+                .build();
+    }
+
 
     @Bean("ollamaChatClient")
     public ChatClient ollama(@Qualifier("ollamaChatModel") ChatModel ollamaChatModel){
